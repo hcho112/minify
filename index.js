@@ -6,7 +6,8 @@ const ProgressBar = require('progress')
 const prompt = require('prompt')
 const fs = require('fs-utils')
 
-const filter = ['.DS_Store', 'Icon']
+
+const { minify } = require('./minify.js')
 
 console.log('Image minifier begin')
 
@@ -60,30 +61,5 @@ prompt.get([sourcePathValidation, destinationPathValidation, qualityValidation],
   const destinationPath = result.destinationPath
   const quality = result.quality
 
-  recursive(sourcePath, filter, function (err, files) {
-    console.log(`Converting ${files.length} files...`)
-    const bar = new ProgressBar('  Minimising [:bar] :percent :etas', {
-      complete: '=',
-      incomplete: ' ',
-      width: 40,
-      total: files.length
-    });
-
-    files.forEach((filePath,index)=> {
-      let removeSourcePath = filePath.replace(sourcePath, '')
-      let extraPath = removeSourcePath.match(/(.*\/)/)
-      let targetDestination = destinationPath
-      if(extraPath) {
-        targetDestination = `${destinationPath}${extraPath[0]}`
-      }
-      imagemin([filePath], targetDestination, {
-        plugins: [
-          imageminMozjpeg({quality: quality}),
-          imageminPngquant({quality: quality})
-        ]
-      }).then(files => {
-        bar.tick(files.length);
-      })
-    })
-  })
+  minify(sourcePath, destinationPath, quality)
 });
